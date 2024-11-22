@@ -1,0 +1,64 @@
+---
+- name: Create installation directory
+  file:
+    path: '{{ audiobookshelf_path }}'
+    state: directory
+    owner: '{{ audiobookshelf_user }}'
+    group: '{{ audiobookshelf_group }}'
+    mode: 0775
+- name: Create internal data directory
+  file:
+    path: '{{ audiobookshelf_internaldata_root }}'
+    state: directory
+    owner: '{{ audiobookshelf_user }}'
+    group: '{{ audiobookshelf_group }}'
+    mode: 0770
+- name: Create config directory
+  file:
+    path: '{{ audiobookshelf_internaldata_root }}/config'
+    state: directory
+    owner: '{{ audiobookshelf_user }}'
+    group: '{{ audiobookshelf_group }}'
+    mode: 0770
+- name: Create metadata directory
+  file:
+    path: '{{ audiobookshelf_internaldata_root }}/metadata'
+    state: directory
+    owner: '{{ audiobookshelf_user }}'
+    group: '{{ audiobookshelf_group }}'
+    mode: 0770
+- name: Get audiobookshelf user info
+  ansible.builtin.getent:
+    database: passwd
+    key: '{{ audiobookshelf_user }}'
+- name: Copy docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: '{{ audiobookshelf_path }}/docker-compose.yml'
+    owner: root
+    group: root
+    mode: 0664
+  vars:
+    audiobookshelf_user_id: '{{ ansible_facts.getent_passwd[audiobookshelf_user][1] }}'
+    audiobookshelf_group_id: '{{ ansible_facts.getent_passwd[audiobookshelf_group][1] }}'
+- name: Enable daily upgrade of base image
+  ansible.builtin.cron:
+    name: 'Upgrade {{ audiobookshelf_path }}'
+    user: root
+    hour: 4
+    minute: 30
+    job: 'docker compose -f {{ audiobookshelf_path }}/docker-compose.yml down && docker compose -f {{ audiobookshelf_path }}/docker-compose.yml pull && docker compose -f {{ audiobookshelf_path }}/docker-compose.yml up -d'
+- name: Copy backup_audiobookshelf.sh
+  ansible.builtin.template:
+    src: backup_audiobookshelf.sh.j2
+    dest: '{{ audiobookshelf_path }}/backup_audiobookshelf.sh'
+    owner: root
+    group: root
+    mode: 0775
+- name: Enable daily backup
+  ansible.builtin.cron:
+    name: 'Backup {{ audiobookshelf_path }} daily'
+    user: root
+    hour: 1
+    minute: 0
+    job: '{{ audiobookshelf_path }}/backup_audiobookshelf.sh'

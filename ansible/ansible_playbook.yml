@@ -1,0 +1,4 @@
+- hosts: audiobookshelf
+  become: true
+  roles:
+    - install-audiobookshelf

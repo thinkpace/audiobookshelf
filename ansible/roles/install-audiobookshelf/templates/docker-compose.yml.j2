@@ -1,0 +1,15 @@
+services:
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    restart: unless-stopped
+    user: {{ audiobookshelf_user_id }}:{{ audiobookshelf_group_id }}
+    ports:
+      - '{{ audiobookshelf_port }}:80'
+    volumes:
+      - {{ audiobookshelf_internaldata_root }}/config:/config
+      - {{ audiobookshelf_internaldata_root }}/metadata:/metadata
+      - {{ audiobookshelf_media_root }}/audiobooks:/audiobooks
+      - {{ audiobookshelf_media_root }}/podcasts:/podcasts
+    environment:
+      - TZ=Europe/Berlin

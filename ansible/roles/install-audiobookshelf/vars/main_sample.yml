@@ -1,0 +1,8 @@
+---
+audiobookshelf_path: '/opt/audiobookshelf'
+audiobookshelf_internaldata_root: '/path/to/my/audiobookshelf/data/folder'
+audiobookshelf_media_root: '/path/to/my/media/root/folder'
+audiobookshelf_port: '13378'
+audiobookshelf_user: audiobookshelf
+audiobookshelf_group: audiobookshelf
+audiobookshelf_rsync_target: 'backup_user@rsync_server::backup_target'

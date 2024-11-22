@@ -1,0 +1,21 @@
+#!/bin/sh
+
+backup_date=$(date +'%Y%m%d')
+backup_path=$(mktemp -d)
+backup_name='audiobookshelf_backup'
+rsync_target={{ audiobookshelf_rsync_target }}
+
+# Stop audiobookshelf
+docker compose -f {{ audiobookshelf_path }}/docker-compose.yml down
+
+# Create backup archive
+tar cvfz $backup_path/$backup_name-$backup_date.tgz {{ audiobookshelf_internaldata_root }}
+
+# Start audiobookshelf
+docker compose -f {{ audiobookshelf_path }}/docker-compose.yml up -d
+
+# rsync to NAS
+rsync -av --password-file={{ audiobookshelf_path }}/rsync.pwd $backup_path/$backup_name-$backup_date.tgz $rsync_target
+
+# Remove tmp directory
+rm -Rf $backup_path
